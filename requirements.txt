@@ -1,0 +1,21 @@
+# We must use django trunk since there is a bug in 1.3.*
+# in the postgres adapter with postgis .. sad but fixed.
+-e git+git://github.com/django/django.git#egg=django
+
+# Since grappelli 1.3.* isn't compatible with django 1.3.*,
+# we must use this development branch ..
+# -e git+git://github.com/fetzig/django-grappelli.git#egg=django-grappelli
+
+# GEO
+pyproj
+setuptools
+psycopg2
+
+# Tastypie requirements
+-e git+git://github.com/toastdriven/django-tastypie.git#egg=django-tastypie
+mimeparse>=0.1.3
+python-dateutil==1.5
+lxml
+PyYAML
+python_digest
+biplist
