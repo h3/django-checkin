@@ -1,0 +1,177 @@
+{% extends "checkin/base.html" %}
+{% load libs_tags %}
+
+{% block app.meta %}
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+{% endblock %}
+
+{% block app.scripts %}
+<script type="text/javascript" src="{{ STATIC_URL }}checkin/js/json2.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.checkin.js"></script>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?v=3.5&sensor=false&callback=$.initmap"></script>
+
+
+<script>
+
+(function(){
+    var cs = $.checkin.init({
+        url: 'http://{{ request.META.HTTP_HOST }}/',
+        campaign: [1]
+    })
+
+    $.CheckinAccuracyScore = function(acc){
+        var o = 5;
+        if      (acc <= 30)   { o = 1 }
+        else if (acc <= 60)   { o = 2 }
+        else if (acc <= 120)  { o = 3 }
+        else if (acc <= 480)  { o = 4 }
+        else if (acc <= 960)  { o = 5 }
+        else if (acc <= 1880) { o = 5 }
+        else if (acc <= 3760) { o = 5 }
+        return o;
+    }
+
+    $.resizemap = function(){
+        if (!$.browser.mobile) {
+            var w = window.innerWidth  - 1;
+            var h = window.innerHeight - 1;
+            $('#gmap').css({width: w, height: h});
+        }
+    }
+
+    $.addMapMarker = function(map, point, title, image){
+        return marker = new google.maps.Marker({
+            position: point, 
+            map: map, 
+            title: title,
+            icon: image || false
+        });   
+    }
+
+    $.createMapIcon = function(src, size, anchor) {
+        return new google.maps.MarkerImage(src,
+            new google.maps.Size(size[0], size[1]),
+            new google.maps.Point(0,0),
+            new google.maps.Point(anchor[0], anchor[1]));
+    }
+
+
+    $(function(){
+        //$('#gmap').css({width: 500, height: 500});
+        $(window).resize($.resizemap);
+
+        if ($.device.desktop) {
+            $('#legend').show();
+            $.resizemap();
+        }
+        else {
+            // Should be 100% .. but it doesn't work ..
+            $('#gmap').css({
+                width: window.innerWidth, 
+                height: window.innerHeight});
+        }
+
+
+
+        function handlerGeoUpdate(pos) {
+            var here = new google.maps.LatLng(
+                pos.coords.latitude, pos.coords.longitude);
+
+            map.setCenter(here);
+
+            var msg  = [
+                'Longitude: ', pos.coords.longitude,
+                'Latitude: ', pos.coords.latitude,
+                'Accuracy: ', pos.coords.accuracy,
+            ].join(', ')
+
+            $.checkin.submit(pos, function() {
+                if (jqXHR.status == 201) {
+                    var msg = "Success! - " + msg
+                    var mex = $.CheckinAccuracyScore(pos.coords.accuracy);
+                }
+                else {
+                    var msg = "Checkin FAIL ("+ jqXHR.status +")" + msg
+                    var mex = 0
+                }
+
+                $.addMapMarker(map, 
+                    new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude), 
+                    msg, "{{ STATIC_URL }}website/img/special-markers/new.png")
+            });
+        }
+
+        if ($.device.gps) {
+            $.checkin.watch(handlerGeoUpdate);
+        }
+
+        $.initmap = function() {
+
+            var initialLocation = new google.maps.LatLng(45.25048, -74.132996); // valleyfield
+            var myOptions = {
+                zoom: 12,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            };
+
+            var map = new google.maps.Map($("#gmap").get(0), myOptions);
+
+            map.setCenter(initialLocation);
+
+            {% for place in checkinplace_list %}
+            var point = new google.maps.LatLng({{ place.lat }}, {{ place.lng }});
+            var marker = $.addMapMarker(map, point, 
+                "{{ place.name }} - {{ place.campaign }}",
+                "{{ STATIC_URL }}checkin/img/checkinplace-{{ place.is_active|yesno:"active,innactive" }}.png"
+            )
+            var circle = new google.maps.Circle({
+              strokeColor: "#a5ff00",
+              strokeOpacity: 0.75,
+              strokeWeight: 2,
+              fillColor: "#a5ff00",
+              fillOpacity: 0.15,
+              map: map,
+              center: point,
+              radius: {% firstof place.proximity place.campaign.proximity %}
+            });
+
+
+            {% endfor %}
+            {% comment %}
+            {% for checkin in checkin_list %}
+            var marker = $.addMapMarker(map, 
+                new google.maps.LatLng({{ checkin.lat }}, {{ checkin.lon }}), 
+                "{{ checkin.date }} - {{ checkin.success|yesno:"YEAH BABY,FAIL,What the ?" }}",
+                $.createMapIcon("{{ STATIC_URL }}checkin/img/checkin-{{ checkin.is_valid|yesno:"ok,fail" }}.png", [29, 31], [14, 15])
+            )
+            {% endfor %}
+            {% endcomment %}
+
+        } // initmap
+
+    })
+})(jQuery)
+</script>
+{% endblock %}
+
+
+{% block project.body %}
+<div id="gmap"></div>
+<style>
+html, body { 
+    margin: 0; 
+    padding: 0; 
+    height: 100%:
+    width: 100%;
+}
+#gmap {
+    width: 500px:
+    height: 500px:
+}
+</style>
+{% endblock %}
+
+{% block project.head %}{% endblock %}
+{% block project.footer %}{% endblock %}
+{% block site.frontadmin %}{% endblock %}
+{% block project.frontadminbar %}{% endblock %}
+

@@ -19,6 +19,8 @@ class CheckinCampaign(models.Model):
     date_end        = models.DateTimeField(_('Date end'), blank=True, null=True)
     date_created    = models.DateTimeField(_('Date created'), auto_now_add=True)
     allow_multi_ci  = models.BooleanField(_('Allow overlaping checkins'), default=True)
+#   proximity       = models.IntegerField(_('Minimum required proximity'), default=settings.DEFAULT_PROXIMITY)
+#   min_accuracy    = models.IntegerField(_('Minimum required accuracy'), default=settings.DEFAULT_PROXIMITY)
     is_active       = models.BooleanField(_('Is active'), default=True)
 
     def _format_distance(self, pnt):
@@ -56,8 +58,8 @@ class CheckinPlace(models.Model):
     lng             = models.FloatField(_('Longitude'), blank=True, null=True)
     lat             = models.FloatField(_('Latitude'), blank=True, null=True)
     distances_unit  = models.CharField(_('Distance unit'), max_length=3, choices=settings.DISTANCE_CHOICES, default=settings.DEFAULT_DISTANCE_UNIT)
-    proximity       = models.IntegerField(_('Minimum required proximity'), default=settings.DEFAULT_PROXIMITY)
-    min_accuracy    = models.IntegerField(_('Minimum required accuracy'), default=settings.DEFAULT_PROXIMITY)
+    proximity       = models.IntegerField(_('Minimum required proximity'), blank=True, null=True)
+    min_accuracy    = models.IntegerField(_('Minimum required accuracy'), blank=True, null=True)
     date_created    = models.DateTimeField(_('Date created'), auto_now_add=True)
     is_active       = models.BooleanField(_('Is active'), default=True)
 

@@ -15,7 +15,8 @@ admin.site.register(CheckinCampaign, CheckinCampaignAdmin)
 
 
 class CheckinPlaceAdmin(GeoModelAdmin):
-    list_display = ('name', 'campaign', 'lat', 'lng', 'point', 'date_created', 'is_active')
+    list_display = ('name', 'campaign', 'lat', 'lng', 'proximity', 'min_accuracy', 'date_created', 'is_active')
+    list_editable = ('proximity', 'min_accuracy',)
 admin.site.register(CheckinPlace, CheckinPlaceAdmin)
 
 
