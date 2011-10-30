@@ -15,12 +15,12 @@ admin.site.register(CheckinCampaign, CheckinCampaignAdmin)
 
 
 class CheckinPlaceAdmin(GeoModelAdmin):
-    list_display = ('name', 'campaign', 'lat', 'lon', 'point', 'date_created', 'is_active')
+    list_display = ('name', 'campaign', 'lat', 'lng', 'point', 'date_created', 'is_active')
 admin.site.register(CheckinPlace, CheckinPlaceAdmin)
 
 
 class CheckinAdmin(GeoModelAdmin):
-    list_display = ('place', 'lat', 'lon', 'accuracy', 'client_ip', 'success', 'date')
+    list_display = ('place', 'lat', 'lng', 'accuracy', 'visitor_ip', 'is_valid', 'date')
    #map_template = 'checkin/admin/openlayers.html'
 admin.site.register(Checkin, CheckinAdmin)
 

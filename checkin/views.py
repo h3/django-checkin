@@ -5,14 +5,15 @@ from checkin.models import *
 
 
 class CheckinSubmitView(CreateView):
-    pass
-#   def get_context_data(self, **kwargs):
-#       context = super(HomeView, self).get_context_data(**kwargs)
-#       #context['object_list'] = ...
-#       return context
+    model = Checkin
 
 class CheckinMapView(ListView):
+    model = Checkin
     template_name = 'checkin/map.html'
+    def get_context_data(self, **kwargs):
+        context = super(CheckinMapView, self).get_context_data(**kwargs)
+        context['checkinplace_list'] = CheckinPlace.objects.all()
+        return context
 
 
 class CheckinConsoleView(TemplateView):
