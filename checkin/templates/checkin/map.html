@@ -123,7 +123,8 @@
                 "{{ place.name }} - {{ place.campaign }}",
                 "{{ STATIC_URL }}checkin/img/checkinplace-{{ place.is_active|yesno:"active,innactive" }}.png"
             )
-            var circle = new google.maps.Circle({
+
+            var range = new google.maps.Circle({
               strokeColor: "#a5ff00",
               strokeOpacity: 0.75,
               strokeWeight: 2,
@@ -132,6 +133,17 @@
               map: map,
               center: point,
               radius: {% firstof place.proximity place.campaign.proximity %}
+            });
+
+            var extendedRange = new google.maps.Circle({
+              strokeColor: "#a5ff00",
+              strokeOpacity: 0.75,
+              strokeWeight: 2,
+              fillColor: "#a5ff00",
+              fillOpacity: 0.15,
+              map: map,
+              center: point,
+              radius: {% firstof place.proximity place.campaign.proximity %} + {% firstof place.min_accuracy place.campaign.min_accuracy %}
             });
 
 

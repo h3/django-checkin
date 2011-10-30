@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
+PLACE_LOADER            = getattr(settings, 'CHECKIN_PLACE_LOADER', None)
 DATABASE                = getattr(settings, 'CHECKIN_DATABASE', 'default')
 DEBUG                   = getattr(settings, 'CHECKIN_DEBUG', False)
 DEFAULT_PROXIMITY       = getattr(settings, 'CHECKIN_DEFAULT_PROXIMITY', 50)

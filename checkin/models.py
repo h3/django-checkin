@@ -19,8 +19,8 @@ class CheckinCampaign(models.Model):
     date_end        = models.DateTimeField(_('Date end'), blank=True, null=True)
     date_created    = models.DateTimeField(_('Date created'), auto_now_add=True)
     allow_multi_ci  = models.BooleanField(_('Allow overlaping checkins'), default=True)
-#   proximity       = models.IntegerField(_('Minimum required proximity'), default=settings.DEFAULT_PROXIMITY)
-#   min_accuracy    = models.IntegerField(_('Minimum required accuracy'), default=settings.DEFAULT_PROXIMITY)
+    proximity       = models.IntegerField(_('Minimum required proximity'), default=settings.DEFAULT_PROXIMITY)
+    min_accuracy    = models.IntegerField(_('Minimum required accuracy'), default=settings.DEFAULT_PROXIMITY)
     is_active       = models.BooleanField(_('Is active'), default=True)
 
     def _format_distance(self, pnt):
@@ -75,6 +75,10 @@ class CheckinPlace(models.Model):
 
     def __unicode__(self):
         return u"%s at lat: %s, lng: %s (%s)" % (self.name, self.lat, self.lng, self.campaign)
+
+    class Meta:
+        unique_together = (("name", "lat", "lng"),)
+        ordering = ("date_created", "name")
 
 
 class Checkin(models.Model):
