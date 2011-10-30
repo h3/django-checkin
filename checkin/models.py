@@ -20,7 +20,6 @@ DISTANCE_UNIT_CHOICES = (
 
 
 class CheckinCampaign(models.Model):
-   #cid             = models.CharField(max_length=32)
     owner           = models.ForeignKey(User)
     name            = models.CharField(max_length=100)
     distances_unit  = models.CharField(max_length=3, choices=DISTANCE_UNIT_CHOICES, default="m")
@@ -43,7 +42,6 @@ class CheckinCampaign(models.Model):
             return (pnt, D(m=self.proximity))
 
     def checkin(self, lon, lat):
-        print lon, lat
         qs = self.checkinplace_set.filter(point__distance_lte=self._format_distance(Point(lon, lat)))
         if qs.count() > 0:
             # TODO: account for allow_multi_ci
