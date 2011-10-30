@@ -19,10 +19,10 @@ class CheckinPlaceAdmin(GeoModelAdmin):
 admin.site.register(CheckinPlace, CheckinPlaceAdmin)
 
 
-class CheckinLogAdmin(GeoModelAdmin):
+class CheckinAdmin(GeoModelAdmin):
     list_display = ('place', 'lat', 'lon', 'accuracy', 'client_ip', 'success', 'date')
    #map_template = 'checkin/admin/openlayers.html'
-admin.site.register(CheckinLog, CheckinLogAdmin)
+admin.site.register(Checkin, CheckinAdmin)
 
 
 
