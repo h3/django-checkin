@@ -1,0 +1,104 @@
+{% extends "checkin/base.html" %}
+{% load libs_tags %}
+
+{% block project.body %}
+<table id="checkin-log">
+    <thead>
+        <tr>
+            <th>Status</th>
+            <th>Lat, Lng</th>
+            <th>Accuracy</th>
+            <th>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<input type="hidden" id="log-count" value="1">
+{% endblock %}
+
+{% block site.styles %}
+{% css "checkin/css/console.css" "static" %}
+{% endblock %}
+
+{% block app.scripts %}
+<script type="text/javascript" src="{{ STATIC_URL }}checkin/js/json2.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.cookie.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.strings.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.checkin.js"></script>
+{# jslib "live-" #}
+
+{# http://jsconsole.com/ #}
+{#<script src="http://jsconsole.com/remote.js?EFF66E92-0B1C-401C-85F2-AA09B61ED7A6"></script>#}
+<script type="text/javascript">
+
+$.tpl('log.entry', [
+    '<tr>',
+        '<td>{checkin.state:s}</td>',
+        '<td>',
+            '<a href="http://maps.google.com/maps?q={checkin.coords.latitude:s}+{checkin.coords.longitude:s}&hl=en&vpsrc=0&t=m&z=16">',
+                '{checkin.coords.latitude:s}&deg;, {checkin.coords.longitude:s}&deg;',
+            '</a>',
+        '</td>',
+        '<td>{checkin.coords.accuracy:.2f}m</td>',
+        '<td>{checkin.timestamp:D}</td>',
+    '</tr>'
+]);
+
+$.extend($.strConversion, {
+    'D': function(timestamp){ 
+        var f = 'Y-M-d H:m:s';
+        var d = new Date(timestamp)
+        function p(value) { return (value.toString().length < 2) ? '0' + value : value; }
+        return f.replace(/([a-zA-Z])/g, function (_, fmtCode) {
+            switch (fmtCode) {
+                case 'Y': return   d.getUTCFullYear();
+                case 'M': return p(d.getUTCMonth() + 1);
+                case 'd': return p(d.getUTCDate());
+                case 'H': return p(d.getUTCHours());
+                case 'm': return p(d.getUTCMinutes());
+                case 's': return p(d.getUTCSeconds());
+                default:  throw new Error('Unsupported format code: ' + fmtCode);
+            }
+        });
+    }
+});
+
+$(function(){  
+    var checkin = $.checkin.init({
+        debug:      true,
+        campaign:   [1],
+        bufferLength: 3, 
+        minAccuracy: 20000,     // 20 000m (to allow desktop testing)
+        minInterval: 3 * 1000,  // 3s
+        maxInterval: 5 * 1000   // 5s
+    });
+
+    var checkinList      = $('#checkin-log');
+    var createCheckinRow = function(msg, checkin){
+        var count = parseInt($('#log-count').val())
+        var row = $.tpl('log.entry', $.extend({state: msg}, checkin));
+        $('#log-count').val(count + 1);
+        row.prependTo('#checkin-log tbody');
+        checkinList.find('thead th:first').text("Status ("+ count +")")
+    }
+
+    checkin.watch(function(pos){
+        createCheckinRow('<span class="blue">New pos.</spab>', pos);
+        checkin.submit(pos, function(checkin, jqXHR, textStatus) {
+            createCheckinRow("<span"+ (checkin.success && ' class="green"> Checkin!' || ' class="red">Checkin fail') +"</span> ", checkin.position);
+        }, false, { maximumAge: 0, enableHighAccuracy: true });
+    });
+
+})
+</script>
+{% endblock %}
+
+
+{% block site.head %}{% endblock %}
+{% block project.head %}{% endblock %}
+{% block project.footer %}{% endblock %}
+{% block project.headstyles %}{% endblock %}
+{% block project.frontadminbar %}{% endblock %}
+{% block site.frontadmin %}{% endblock %}
+

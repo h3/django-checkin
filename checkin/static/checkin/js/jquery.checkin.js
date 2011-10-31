@@ -38,8 +38,6 @@ $.checkin = function() {
     $self.options = {
         debug: false,
         api_url: false,
-        api_key: false,
-        api_version: 'v1',
         campaign: [],
         // Anything less accurate than 1000 wont be sent to buffer
         minAccuracy: 1000,
