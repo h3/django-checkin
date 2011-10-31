@@ -7,6 +7,7 @@
 
 {% block app.scripts %}
 <script type="text/javascript" src="{{ STATIC_URL }}checkin/js/json2.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.strings.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.checkin.js"></script>
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?v=3.5&sensor=false&callback=$.initmap"></script>
 
@@ -55,6 +56,24 @@
             new google.maps.Point(anchor[0], anchor[1]));
     }
 
+    var infoWindowTemplate = [
+        '<div id="content">',
+            '<div id="siteNotice"></div>',
+            '<b id="firstHeading" class="firstHeading"><a href="{% url admin:checkin_checkinplace_changelist %}{place.id:d}/">{place.name:s}</a></b>',
+            '<div id="bodyContent">',
+                '<address>{place.address:s}</address>',
+                '<table style="text-align:left;">',
+                    '<tr><th>Campaign</th><td>{place.campaign:s}</td></tr>',
+                    '<tr><th>Longitude</th><td>{place.lng:s}</td></tr>',
+                    '<tr><th>Latitude</th><td>{place.lat:s}</td></tr>',
+                    '<tr><th>Req. proximity</th><td>{place.proximity:s} {place.distances_unit:s}</td></tr>',
+                    '<tr><th>Min. accuracy</th><td>{place.min_accuracy:s} {place.distances_unit:s}</td></tr>',
+                    '<tr><th>Date created</th><td>{place.date_created:s}</td></tr>',
+                    '<tr><th>Is active</th><td>{place.is_active:s}</td></tr>',
+                '</table>',
+        '</div>',
+    '</div>'
+    ].join('');
 
     $(function(){
         //$('#gmap').css({width: 500, height: 500});
@@ -118,35 +137,56 @@
             map.setCenter(initialLocation);
 
             {% for place in checkinplace_list %}
-            var point = new google.maps.LatLng({{ place.lat }}, {{ place.lng }});
-            var marker = $.addMapMarker(map, point, 
+            var point{{ forloop.counter }} = new google.maps.LatLng({{ place.lat }}, {{ place.lng }});
+
+            var marker{{ forloop.counter }} = $.addMapMarker(map, point{{ forloop.counter }}, 
                 "{{ place.name }} - {{ place.campaign }}",
-                "{{ STATIC_URL }}checkin/img/checkinplace-{{ place.is_active|yesno:"active,innactive" }}.png"
+                "{{ STATIC_URL }}checkin/img/checkinplace-{{ place.is_active|yesno:"active,inactive" }}.png"
             )
 
-            var range = new google.maps.Circle({
-              strokeColor: "#a5ff00",
-              strokeOpacity: 0.75,
+            var range{{ forloop.counter }} = new google.maps.Circle({
+              strokeColor: "#{{ place.is_active|yesno:"bdff16,999999" }}",
+              strokeOpacity: 0.85,
               strokeWeight: 2,
-              fillColor: "#a5ff00",
-              fillOpacity: 0.15,
+              fillColor: "#{{ place.is_active|yesno:"bdff16,999999" }}",
+              fillOpacity: 0.25,
               map: map,
-              center: point,
+              center: point{{ forloop.counter }},
               radius: {% firstof place.proximity place.campaign.proximity %}
             });
 
-            var extendedRange = new google.maps.Circle({
-              strokeColor: "#a5ff00",
-              strokeOpacity: 0.75,
-              strokeWeight: 2,
-              fillColor: "#a5ff00",
-              fillOpacity: 0.15,
+            var extendedRange{{ forloop.counter }} = new google.maps.Circle({
+              strokeColor: "#{{ place.is_active|yesno:"7cdeff,999999" }}",
+              strokeOpacity: 0.45,
+              strokeWeight: 1,
+              fillColor: "#{{ place.is_active|yesno:"7cdeff,999999" }}",
+              fillOpacity: 0.09,
               map: map,
-              center: point,
+              center: point{{ forloop.counter }},
               radius: {% firstof place.proximity place.campaign.proximity %} + {% firstof place.min_accuracy place.campaign.min_accuracy %}
             });
+            
+            var infowindow{{ forloop.counter }} = new google.maps.InfoWindow({
+                content: $.format(infoWindowTemplate, {
+                    id: "{{ place.id }}",
+                    name: "{{ place.name }}",
+                    address: "{{ place.address }}",
+                    campaign: "[{{ place.campaign_id }}] {{ place.campaign.name }}",
+                    name: "{{ place.name }}",
+                    address: "{{ place.address }}",
+                    lng: "{{ place.lng }}",
+                    lat: "{{ place.lat }}",
+                    distances_unit: "{{ place.distances_unit }}",
+                    proximity: "{{ place.proximity }}",
+                    min_accuracy: "{{ place.min_accuracy }}",
+                    date_created: "{{ place.date_created }}",
+                    is_active: "{{ place.is_active }}"
+                })
+            });
 
-
+            google.maps.event.addListener(marker{{ forloop.counter }}, 'click', function() {
+              infowindow{{ forloop.counter }}.open(map, marker{{ forloop.counter }});
+            });
             {% endfor %}
             {% comment %}
             {% for checkin in checkin_list %}

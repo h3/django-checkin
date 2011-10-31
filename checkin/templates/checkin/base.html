@@ -16,7 +16,8 @@
   {% endblock %}
 
   {% block project.favicon %}
-  <link rel='shortcut icon' href="{{ MEDIA_URL }}img/favicon.ico" />
+  {# Important: must absolutely provide a favicon or else Google Maps makes the clients floods the server for requests. #}
+  <link rel='shortcut icon' href="{{ STATIC_URL }}checkin/img/favicon.ico" />
   {% endblock%}
 
   {% block site.headstyles %}
