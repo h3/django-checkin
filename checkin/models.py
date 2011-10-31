@@ -35,7 +35,9 @@ class CheckinCampaign(models.Model):
    #        return (pnt, D(m=self.proximity))
 
     def checkin(self, lng, lat):
-        qs = self.checkinplace_set.filter(point__distance_lte=(Point(lng, lat), D(m=self.proximity)))
+        qs = self.checkinplace_set.filter(
+                point__distance_lte=(Point(lng, lat), D(m=self.proximity)),
+                is_active=True)
         # TODO: second pass for checkin places that have custom proximity set
         if qs.count() > 0:
             # TODO: account for allow_multi_ci
