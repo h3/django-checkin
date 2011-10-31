@@ -82,22 +82,32 @@ $.checkin = function() {
     };
 
     $self.url = function(path) {
-        return [$self.options.api_url,
-                $self.options.api_version,
-                '/',path].join('');
+        return [$self.options.api_url,path].join('');
     };
 
     $self.send_checkin = function(pos, callback) {
         var data = $self.getMostAccurateReading();
-        pos.key = $self.options.key;
-        pos.cid = $self.options.campaign[0];
-        pos.useragent = navigator && navigator.userAgent || "Unkown";
+      //data.key = $self.options.key;
+        data.cid = $self.options.campaign[0];
+        data.useragent = navigator && navigator.userAgent || "Unkown";
+        $.post($self.url('checkin'), data, function(data){
+            var ci = {
+                success: true,
+                position: pos
+            }
+            try {
+                $self.buffer = [];
+                callback(ci, jqXHR, textStatus);
+            }
+            catch (e) {
+                $self.log("No checkin callback set.")
+            }
+        });
+        /*
         $.ajax({
-            url: $self.url('checkin/'),
+            url: $self.url('checkin'),
             type: 'post',
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            dataType: 'json',
+            data: "test=test&blah=blah",
             processData: false,
             complete: function(jqXHR, textStatus) {
                 var ci = {
@@ -115,6 +125,7 @@ $.checkin = function() {
                 //console.log(textStatus)
             }
         })
+        */
     }
 
     return {

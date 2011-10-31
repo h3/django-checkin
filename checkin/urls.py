@@ -1,10 +1,11 @@
 from django.conf.urls.defaults import *
+from django.views.decorators.csrf import csrf_exempt
 
 from checkin.conf import settings
 from checkin.views import *
 
 urlpatterns = patterns('',
-    url(r'^checkin$',  CheckinSubmitView.as_view(),   name='checkin-submit'),
+    url(r'^checkin$',  csrf_exempt(CheckinSubmitView.as_view()), name='checkin-submit'),
 )
 
 if settings.DEBUG:

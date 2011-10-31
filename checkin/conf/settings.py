@@ -8,7 +8,7 @@ DEFAULT_PROXIMITY       = getattr(settings, 'CHECKIN_DEFAULT_PROXIMITY', 50)
 DEFAULT_DISTANCE_UNIT   = getattr(settings, 'CHECKIN_DEFAULT_DISTANCE_UNIT', 'm')
 DISTANCE_CHOICES        = getattr(settings, 'CHECKIN_DISTANCE_CHOICES', (
     ('m',  _('Meters')),
-    ('km', _('Kilometers')),
-    ('ft', _('Feet')),
-    ('mi', _('Miles')),
+#   ('km', _('Kilometers')),
+#   ('ft', _('Feet')),
+#   ('mi', _('Miles')),
 ))

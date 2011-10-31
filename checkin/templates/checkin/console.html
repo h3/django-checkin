@@ -66,10 +66,11 @@ $.extend($.strConversion, {
 
 $(function(){  
     var checkin = $.checkin.init({
+        api_url: 'http://{{ request.META.HTTP_HOST }}/c/',
         debug:      true,
         campaign:   [1],
         bufferLength: 3, 
-        minAccuracy: 20000,     // 20 000m (to allow desktop testing)
+        minAccuracy: 30000,     // 20 000m (to allow desktop testing)
         minInterval: 3 * 1000,  // 3s
         maxInterval: 5 * 1000   // 5s
     });

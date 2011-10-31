@@ -23,19 +23,20 @@ class CheckinCampaign(models.Model):
     min_accuracy    = models.IntegerField(_('Minimum required accuracy'), default=settings.DEFAULT_PROXIMITY)
     is_active       = models.BooleanField(_('Is active'), default=True)
 
-    def _format_distance(self, pnt):
-       #return (pnt, D(**{self.distances_unit: self.proximity}))
-        if self.distances_unit == 'km':
-            return (pnt, D(km=self.proximity))
-        elif self.distances_unit == 'mi':
-            return (pnt, D(mi=self.proximity))
-        elif self.distances_unit == 'ft':
-            return (pnt, D(ft=self.proximity))
-        else:
-            return (pnt, D(m=self.proximity))
+   #def _format_distance(self, pnt):
+   #   #return (pnt, D(**{self.distances_unit: self.proximity}))
+   #    if self.distances_unit == 'km':
+   #        return (pnt, D(km=self.proximity))
+   #    elif self.distances_unit == 'mi':
+   #        return (pnt, D(mi=self.proximity))
+   #    elif self.distances_unit == 'ft':
+   #        return (pnt, D(ft=self.proximity))
+   #    else:
+   #        return (pnt, D(m=self.proximity))
 
     def checkin(self, lng, lat):
-        qs = self.checkinplace_set.filter(point__distance_lte=self._format_distance(Point(lng, lat)))
+        qs = self.checkinplace_set.filter(point__distance_lte=(Point(lng, lat), D(m=self.proximity)))
+        # TODO: second pass for checkin places that have custom proximity set
         if qs.count() > 0:
             # TODO: account for allow_multi_ci
             print "Sucessful checkin !!"
@@ -77,7 +78,7 @@ class CheckinPlace(models.Model):
         return u"%s at lat: %s, lng: %s (%s)" % (self.name, self.lat, self.lng, self.campaign)
 
     class Meta:
-        unique_together = (("name", "lat", "lng"),)
+        unique_together = (("campaign", "lat", "lng"),)
         ordering = ("date_created", "name")
 
 
