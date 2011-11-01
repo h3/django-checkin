@@ -103,13 +103,13 @@
                 'Accuracy: ', pos.coords.accuracy,
             ].join(', ')
 
-            $.checkin.submit(pos, function() {
-                if (jqXHR.status == 201) {
+            $.checkin.submit(pos, function(data) {
+                if (data.success != false) {
                     var msg = "Success! - " + msg
                     var mex = $.CheckinAccuracyScore(pos.coords.accuracy);
                 }
                 else {
-                    var msg = "Checkin FAIL ("+ jqXHR.status +")" + msg
+                    var msg = "Checkin FAIL ("+ data.errors.join(', ') +")" + msg
                     var mex = 0
                 }
 

@@ -1,3 +1,5 @@
+import datetime
+
 from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, TemplateView, DetailView, CreateView
@@ -48,21 +50,22 @@ class CheckinSubmitView(ProcessFormView):
         obj.lng        = request.POST['coords[longitude]']
         obj.lat        = request.POST['coords[latitude]']
         obj.accuracy   = request.POST['coords[accuracy]']
-        obj.timestamp  = request.POST['timestamp']
+        obj.timestamp  = datetime.datetime.fromtimestamp(int(request.POST['timestamp'][0:9]))
         obj.useragent  = request.POST['useragent']
         obj.visitor_ip = real_ip
 #       obj.extra_data = 
         obj.save()
             
+        
         return HttpResponse(simplejson.dumps({
             'errors': False,
             'checkin': {
                 'place': place,
                 'is_valid': obj.is_valid,
-                'lng': obj.lng,
-                'lat': obj.lat,
-                'accuracy': obj.accuracy,
-                'timestamp': obj.timestamp,
+                'lng': float(obj.lng),
+                'lat': float(obj.lat),
+                'accuracy': int(obj.accuracy),
+                'timestamp': int(request.POST['timestamp']),
             }
             
         }), mimetype='application/json')

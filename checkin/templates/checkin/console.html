@@ -36,11 +36,11 @@ $.tpl('log.entry', [
     '<tr>',
         '<td>{checkin.state:s}</td>',
         '<td>',
-            '<a href="http://maps.google.com/maps?q={checkin.coords.latitude:s}+{checkin.coords.longitude:s}&hl=en&vpsrc=0&t=m&z=16">',
-                '{checkin.coords.latitude:s}&deg;, {checkin.coords.longitude:s}&deg;',
+            '<a href="http://maps.google.com/maps?q={checkin.lat:s}+{checkin.lng:s}&hl=en&vpsrc=0&t=m&z=16">',
+                '{checkin.lat:s}&deg; {checkin.lng:s}&deg;',
             '</a>',
         '</td>',
-        '<td>{checkin.coords.accuracy:.2f}m</td>',
+        '<td>{checkin.accuracy:.2f}m</td>',
         '<td>{checkin.timestamp:D}</td>',
     '</tr>'
 ]);
@@ -48,17 +48,21 @@ $.tpl('log.entry', [
 $.extend($.strConversion, {
     'D': function(timestamp){ 
         var f = 'Y-M-d H:m:s';
-        var d = new Date(timestamp)
+        var d = new Date(timestamp);
         function p(value) { return (value.toString().length < 2) ? '0' + value : value; }
         return f.replace(/([a-zA-Z])/g, function (_, fmtCode) {
-            switch (fmtCode) {
-                case 'Y': return   d.getUTCFullYear();
-                case 'M': return p(d.getUTCMonth() + 1);
-                case 'd': return p(d.getUTCDate());
-                case 'H': return p(d.getUTCHours());
-                case 'm': return p(d.getUTCMinutes());
-                case 's': return p(d.getUTCSeconds());
-                default:  throw new Error('Unsupported format code: ' + fmtCode);
+            try {
+                return ({
+                    Y: d.getFullYear(),
+                    M: p(d.getMonth() + 1),
+                    d: p(d.getDate()),
+                    H: p(d.getHours()),
+                    m: p(d.getMinutes()),
+                    s: p(d.getSeconds())
+                })[fmtCode];
+            }
+            catch(e) {
+                return fmtCode;
             }
         });
     }
@@ -76,6 +80,7 @@ $(function(){
     });
 
     var checkinList      = $('#checkin-log');
+
     var createCheckinRow = function(msg, checkin){
         var count = parseInt($('#log-count').val())
         var row = $.tpl('log.entry', $.extend({state: msg}, checkin));
@@ -85,9 +90,14 @@ $(function(){
     }
 
     checkin.watch(function(pos){
-        createCheckinRow('<span class="blue">New pos.</spab>', pos);
-        checkin.submit(pos, function(checkin, jqXHR, textStatus) {
-            createCheckinRow("<span"+ (checkin.success && ' class="green"> Checkin!' || ' class="red">Checkin fail') +"</span> ", checkin.position);
+        createCheckinRow('New pos.', {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            timestamp: pos.timestamp,
+            accuracy: pos.coords.accuracy
+        });
+        checkin.submit(pos, function(data) {
+            createCheckinRow("<span"+ (data.errors == false && ' class="green"> Checkin!' || ' class="red">Checkin fail') +"</span> ", data.checkin);
         }, false, { maximumAge: 0, enableHighAccuracy: true });
     });
 

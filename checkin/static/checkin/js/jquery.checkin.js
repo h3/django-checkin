@@ -1,6 +1,11 @@
 /* jQuery.checkin.js
  * (c) 2011 Motion Média
  * author: Maxime Haineault
+ *
+ *
+ * User-Agent:*
+ * X-Requested-With:XMLHttpRequest
+ *
  * */
 
 
@@ -51,6 +56,10 @@ $.checkin = function() {
         maxInterval: 10000
     };
 
+    $self.timestamp = function(i){
+        return i || new Date().getTime();
+    }
+
     $self.getMostAccurateReading = function() {
         if ($self.buffer.length > 0) {
             $self.buffer.sort(function(a, b){ 
@@ -87,45 +96,12 @@ $.checkin = function() {
 
     $self.send_checkin = function(pos, callback) {
         var data = $self.getMostAccurateReading();
-      //data.key = $self.options.key;
         data.cid = $self.options.campaign[0];
-        data.useragent = navigator && navigator.userAgent || "Unkown";
+        data.useragent = navigator && navigator.userAgent || "";
         $.post($self.url('checkin'), data, function(data){
-            var ci = {
-                success: true,
-                position: pos
-            }
-            try {
-                $self.buffer = [];
-                callback(ci, jqXHR, textStatus);
-            }
-            catch (e) {
-                $self.log("No checkin callback set.")
-            }
+            $self.buffer = [];
+            callback(data);
         });
-        /*
-        $.ajax({
-            url: $self.url('checkin'),
-            type: 'post',
-            data: "test=test&blah=blah",
-            processData: false,
-            complete: function(jqXHR, textStatus) {
-                var ci = {
-                    success: jqXHR.status == 201,
-                    position: pos
-                }
-                try {
-                    $self.buffer = [];
-                    callback(ci, jqXHR, textStatus);
-                }
-                catch (e) {
-                    $self.log("No checkin callback set.")
-                }
-                //console.log(jqXHR)
-                //console.log(textStatus)
-            }
-        })
-        */
     }
 
     return {
@@ -140,23 +116,26 @@ $.checkin = function() {
             checkinobj = jQuery.extend(checkinobj, pos.coords);
 
             var ci = function() {
+                $self.send_checkin(checkinobj, callback)
+                    /*
                 try {
                     $self.send_checkin(checkinobj, callback)
                 } catch(e) {
                     $self.log("Error: Checkin failed");
                 }
+                */
             };
 
-            if ($self.last_checkin && (new Date().getTime() - $self.last_checkin) < $self.options.minInterval) {
+            if ($self.last_checkin && ($self.timestamp() - $self.last_checkin) < $self.options.minInterval) {
                 $self.log("Ignoring checkin because the time interval since the last checkin wasn't long enough (%s < %s).", 
-                    (new Date().getTime() - $self.last_checkin), $self.options.minInterval)
+                    ($self.timestamp() - $self.last_checkin), $self.options.minInterval)
                 return false;
             }
 
             if (checkinobj.coords.accuracy <= $self.options.minAccuracy) {
                 $self.buffer.push(checkinobj);
                 clearInterval($self._interval);
-                $self.last_checkin = new Date().getTime();
+                $self.last_checkin = $self.timestamp();
                 if ($self.buffer.length >= $self.options.bufferLength) {
                     $self.log("Collected enough positional data, now sending most accurate checkin.")
                     ci.call();
