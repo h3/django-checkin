@@ -42,6 +42,7 @@ $.checkin = function() {
     $self.buffer  = [];
     $self.options = {
         debug: false,
+        log: false,
         api_url: false,
         campaign: [],
         // Anything less accurate than 1000 wont be sent to buffer
@@ -63,9 +64,9 @@ $.checkin = function() {
     $self.getMostAccurateReading = function() {
         if ($self.buffer.length > 0) {
             $self.buffer.sort(function(a, b){ 
-                return a.coords.accuracy < b.coords.accuracy
+                return a.coords.accuracy > b.coords.accuracy
             });
-            return $self.buffer.shift()
+            return $self.buffer[0];
         }
         return false;
     };
@@ -75,19 +76,27 @@ $.checkin = function() {
             alert("Geolocation service failed.");
         } 
         else {
-            alert("Your browser doesn't support geolocation. We've placed you in Siberia.");
+            alert("Your browser doesn't support geolocation.");
         }
     };
 
-    $self.log = function() {
+    $self.log =  function() {
         if ($self.options.debug) {
-            console.log.apply(console, Array.prototype.slice.call(arguments))
+            if ($self.options.log) {
+                $self.options.log.apply(window, Array.prototype.slice.call(arguments));
+            }
+            else {
+                console.log.apply(console, Array.prototype.slice.call(arguments));
+            }
         }
     };
 
     $self.watch = function(callback, onerror, options) {
-        $self._watchId = navigator.geolocation.watchPosition(
-                            callback, onerror, options);
+        var cb = function(pos) {
+            $self.buffer.push(pos);
+            callback(pos);
+        };
+        $self._watchId = navigator.geolocation.watchPosition(cb, onerror, options);
     };
 
     $self.url = function(path) {
@@ -98,9 +107,12 @@ $.checkin = function() {
         var data = $self.getMostAccurateReading();
         data.cid = $self.options.campaign[0];
         data.useragent = navigator && navigator.userAgent || "";
-        $.post($self.url('checkin'), data, function(data){
+        $.post($self.url('checkin'), data, function(rs){
+            if (rs.checkin.place) {
+                $self.log("Checked in at %s", rs.checkin.place.name)
+            }
+            callback(rs);
             $self.buffer = [];
-            callback(data);
         });
     }
 
@@ -111,9 +123,8 @@ $.checkin = function() {
         },
 
         submit: function(pos, callback) {
-            var checkinobj = $.extend({}, pos);
             // hack to work around strange serialization problem with firefox ..
-            checkinobj = jQuery.extend(checkinobj, pos.coords);
+            var checkinobj = $.extend(checkinobj, pos);
 
             if ($self.last_checkin && ($self.timestamp() - $self.last_checkin) < $self.options.minInterval) {
                 $self.log("Ignoring checkin because the time interval since the last checkin wasn't long enough (%s < %s).", 
@@ -138,6 +149,7 @@ $.checkin = function() {
                         $self.log("Timeout expired, waited %s seconds for a new checkin. Sending data (%s sample in buffer)",
                                   $self.options.maxInterval/1000, $self.buffer.length)
                         $self.send_checkin(checkinobj, callback)
+                        return true;
                     }, $self.options.maxInterval);
                 }
             }

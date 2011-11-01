@@ -8,6 +8,9 @@ a {
     text-decoration: none;
 }
 
+.hide  { display: none; }
+.clear { clear: both; }
+
 .blue {
     color: #68c5ff;
 }
@@ -20,6 +23,7 @@ a {
 
 #checkin-log {
     width: 100%; 
+    margin: 10px 0 0 0;
 }
 #checkin-log th {
     background: #222;
@@ -36,8 +40,35 @@ a {
     text-align: center;
 }
 
+#console-logs div:first-child,
 #checkin-log tr:first-child td {
     background: #333;
     color: #fff;
     font-weight: bold;
+}
+
+#console-logs {
+    margin: 10px 0 0 0;
+}
+
+.log-entry {
+    color: #fff;
+    background: #222;
+    border-bottom: 1px solid #000;
+    padding: 5px;
+}
+#console-menu {
+    background: #222;
+}
+#console-menu a {
+    background: #00fff6;
+    padding: 4px 6px;
+    display: block;
+    float: left;
+    margin: 0 2px 0 0;
+    color: #000;
+}
+#console-menu a.active {
+    background: #ccc;
+    color: #555;
 }

@@ -91,7 +91,7 @@ class Checkin(models.Model):
     # Checkin infos
     lng        = models.FloatField()
     lat        = models.FloatField()
-    accuracy   = models.IntegerField(default=20000)
+    accuracy   = models.FloatField(default=20000)
     timestamp  = models.DateTimeField(_('Checkin date'), auto_now_add=True)
     useragent  = models.CharField(max_length=250, default="Unknown")
     visitor_ip = models.IPAddressField(blank=True, null=True)

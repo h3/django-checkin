@@ -2,6 +2,11 @@
 {% load libs_tags %}
 
 {% block project.body %}
+<div id="console-menu">
+    <a id="console-btn" class="active" href="#console">Console</a>
+    <a id="logs-btn" href="#logs">Logs</a>
+    <div class="clear"></div>
+</div>
 <table id="checkin-log">
     <thead>
         <tr>
@@ -13,6 +18,7 @@
     </thead>
     <tbody></tbody>
 </table>
+<div id="console-logs" class="hide"></div>
 <input type="hidden" id="log-count" value="1">
 {% endblock %}
 
@@ -21,8 +27,7 @@
 {% endblock %}
 
 {% block app.scripts %}
-<script src="http://jsconsole.com/remote.js?5ADC9169-737D-4C2D-83AB-39C41DC436A5"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}checkin/js/json2.min.js"></script>
+{#<script type="text/javascript" src="{{ STATIC_URL }}checkin/js/json2.min.js"></script>#}
 <script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.cookie.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.strings.js"></script>
@@ -68,17 +73,28 @@ $.extend($.strConversion, {
         });
     }
 });
-
 $(function(){  
-    var checkin = $.checkin.init({
+
+    var opts = {
         api_url: 'http://{{ request.META.HTTP_HOST }}/c/',
         debug:      true,
-        campaign:   [1],
+        campaign:   [2],
         bufferLength: 3, 
         minAccuracy: 30000,     // 20 000m (to allow desktop testing)
         minInterval: 3 * 1000,  // 3s
         maxInterval: 5 * 1000   // 5s
-    });
+    }
+    opts.log = function() {
+        var args = $.makeArray(arguments);
+        var msg  = args.shift();
+        if (args.length > 0) {
+            msg = msg.replace(/%\w/g, function(){ 
+                return args.shift()
+            })
+        }
+        $('<div class="log-entry"></div>').prependTo('#console-logs').text(msg)
+    }
+    var checkin = $.checkin.init(opts);
 
     var checkinList      = $('#checkin-log');
 
@@ -92,7 +108,12 @@ $(function(){
 
     checkin.watch(function(pos){
         var pos = $.extend({}, pos)
-        pos.timestamp = pos.timestamp.getTime();
+        try {
+            pos.timestamp = pos.timestamp.getTime();
+        }
+        catch (e) {
+            pos.timestamp = pos.timestamp;
+        }
 
         createCheckinRow('New pos.', {
             lat: pos.coords.latitude,
@@ -102,9 +123,32 @@ $(function(){
         });
 
         checkin.submit(pos, function(data) {
-            createCheckinRow("<span"+ (data.errors == false && ' class="green"> Checkin!' || ' class="red">Checkin fail') +"</span> ", data.checkin);
+            var msg;
+            if (data.errors) {
+                msg = '<span class="red">Checkin fail</span>';
+            }
+            else if (data.checkin.place) {
+                msg = '<span class="blue">'+ data.checkin.place.name +'</span>';
+            }
+            else {
+                msg = '<span class="green">Checkin</span>';
+            }
+            createCheckinRow(msg, data.checkin);
         }, false, { maximumAge: 0, enableHighAccuracy: true });
     });
+
+    $('#console-btn').bind('click', function() {
+        $(this).addClass('active');
+        $('#checkin-log').show();
+        $('#console-logs').hide();
+        $('#logs-btn').removeClass('active');
+    })
+    $('#logs-btn').bind('click', function() {
+        $(this).addClass('active');
+        $('#checkin-log').hide();
+        $('#console-logs').show();
+        $('#console-btn').removeClass('active');
+    })
 
 })
 </script>

@@ -24,7 +24,6 @@ class CheckinSubmitView(ProcessFormView):
         return HttpResponseForbidden(u"Nice try. I'll tell your mom about this.")
 
     def post(self, request, *args, **kwargs):
-        print request.POST
        #brake()()
         obj         = Checkin()
         campaign    = get_object_or_404(CheckinCampaign, pk=request.POST['cid'])
@@ -64,7 +63,7 @@ class CheckinSubmitView(ProcessFormView):
                 'is_valid': obj.is_valid,
                 'lng': float(obj.lng),
                 'lat': float(obj.lat),
-                'accuracy': int(obj.accuracy),
+                'accuracy': float(obj.accuracy),
                 'timestamp': int(request.POST['timestamp']),
             }
             
