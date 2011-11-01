@@ -21,6 +21,7 @@
 {% endblock %}
 
 {% block app.scripts %}
+<script src="http://jsconsole.com/remote.js?5ADC9169-737D-4C2D-83AB-39C41DC436A5"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}checkin/js/json2.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}checkin/js/jquery.cookie.js"></script>
@@ -90,12 +91,16 @@ $(function(){
     }
 
     checkin.watch(function(pos){
+        var pos = $.extend({}, pos)
+        pos.timestamp = pos.timestamp.getTime();
+
         createCheckinRow('New pos.', {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
             timestamp: pos.timestamp,
             accuracy: pos.coords.accuracy
         });
+
         checkin.submit(pos, function(data) {
             createCheckinRow("<span"+ (data.errors == false && ' class="green"> Checkin!' || ' class="red">Checkin fail') +"</span> ", data.checkin);
         }, false, { maximumAge: 0, enableHighAccuracy: true });

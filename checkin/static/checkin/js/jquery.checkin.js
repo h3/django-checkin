@@ -115,17 +115,6 @@ $.checkin = function() {
             // hack to work around strange serialization problem with firefox ..
             checkinobj = jQuery.extend(checkinobj, pos.coords);
 
-            var ci = function() {
-                $self.send_checkin(checkinobj, callback)
-                    /*
-                try {
-                    $self.send_checkin(checkinobj, callback)
-                } catch(e) {
-                    $self.log("Error: Checkin failed");
-                }
-                */
-            };
-
             if ($self.last_checkin && ($self.timestamp() - $self.last_checkin) < $self.options.minInterval) {
                 $self.log("Ignoring checkin because the time interval since the last checkin wasn't long enough (%s < %s).", 
                     ($self.timestamp() - $self.last_checkin), $self.options.minInterval)
@@ -138,7 +127,7 @@ $.checkin = function() {
                 $self.last_checkin = $self.timestamp();
                 if ($self.buffer.length >= $self.options.bufferLength) {
                     $self.log("Collected enough positional data, now sending most accurate checkin.")
-                    ci.call();
+                    $self.send_checkin(checkinobj, callback)
                     return true;
                 }
                 else {
@@ -148,7 +137,7 @@ $.checkin = function() {
                     $self._interval = setTimeout(function(){
                         $self.log("Timeout expired, waited %s seconds for a new checkin. Sending data (%s sample in buffer)",
                                   $self.options.maxInterval/1000, $self.buffer.length)
-                        ci.call();
+                        $self.send_checkin(checkinobj, callback)
                     }, $self.options.maxInterval);
                 }
             }
