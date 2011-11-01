@@ -131,7 +131,7 @@ $(function(){
                 msg = '<span class="blue">'+ data.checkin.place.name +'</span>';
             }
             else {
-                msg = '<span class="green">Checkin</span>';
+                msg = '<span class="green">Checkin (OOB)</span>';
             }
             createCheckinRow(msg, data.checkin);
         }, false, { maximumAge: 0, enableHighAccuracy: true });

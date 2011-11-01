@@ -14,9 +14,14 @@
 <script>
 
 (function(){
-    var cs = $.checkin.init({
-        url: 'http://{{ request.META.HTTP_HOST }}/',
-        campaign: [1]
+    var checkin = $.checkin.init({
+        api_url: 'http://{{ request.META.HTTP_HOST }}/c/',
+        debug:      true,
+        campaign:   [2],
+        bufferLength: 3, 
+        minAccuracy: 30000,     // 20 000m (to allow desktop testing)
+        minInterval: 3 * 1000,  // 3s
+        maxInterval: 5 * 1000   // 5s
     })
 
     $.CheckinAccuracyScore = function(acc){
@@ -119,10 +124,6 @@
             });
         }
 
-        if ($.device.gps) {
-            $.checkin.watch(handlerGeoUpdate);
-        }
-
         $.initmap = function() {
 
             var initialLocation = new google.maps.LatLng(45.25048, -74.132996); // valleyfield
@@ -196,6 +197,41 @@
             )
             {% endfor %}
             {% endcomment %}
+
+
+            // Active tracker
+            var active_marker = false;
+            var active_point = false;
+            var active_range = false;
+            checkin.watch(function(pos){
+                var pos = $.extend({}, pos)
+                try {
+                    pos.timestamp = pos.timestamp.getTime();
+                }
+                catch (e) {
+                    pos.timestamp = pos.timestamp;
+                }
+
+                // Reset
+                if (active_marker) { active_marker.setMap(null);active_marker = false; }
+                if (active_range)  { active_range.setMap(null);active_range = false; }
+                active_point  = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+                active_marker = $.addMapMarker(map, active_point, 
+                    "Current GPS position "+ pos.coords.latitude +", "+ pos.coords.longitude +" ("+ pos.coords.accuracy +")",
+                    "{{ STATIC_URL }}checkin/img/you.png"
+                )
+
+                active_range = new google.maps.Circle({
+                  strokeColor: "#cc3300",
+                  strokeOpacity: 0.85,
+                  strokeWeight: 2,
+                  fillColor: "#cc3300",
+                  fillOpacity: 0.25,
+                  map: map,
+                  center: active_point,
+                  radius: pos.coords.accuracy
+                });
+            })
 
         } // initmap
 
