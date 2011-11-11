@@ -85,6 +85,7 @@ class CheckinPlace(models.Model):
 
 
 class Checkin(models.Model):
+    user       = models.ForeignKey(User)
     date       = models.DateTimeField(_('Checkin date'), auto_now_add=True)
     place      = models.ForeignKey(CheckinPlace, blank=True, null=True)
     is_valid   = models.BooleanField(default=False)
