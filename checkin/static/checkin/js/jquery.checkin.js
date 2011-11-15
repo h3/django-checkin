@@ -99,6 +99,10 @@ $.checkin = function() {
         $self._watchId = navigator.geolocation.watchPosition(cb, onerror, options);
     };
 
+    $self.getCurrentPosition = function(callback, onerror, options) {
+        navigator.geolocation.getCurrentPosition(callback, onerror, options);
+    };
+
     $self.url = function(path) {
         return [$self.options.api_url,path].join('');
     };
@@ -181,6 +185,27 @@ $.checkin = function() {
 
             else {
                 onerr.call()
+            }
+        },
+
+        getCurrentPosition: function(callback, onerror, options) {
+            var opts  = $.extend({maximumAge: 600000, timeout: 5000}, options);
+            var pos = []
+
+            var cachedPosSuccess = function(position) {
+                pos.push(position);
+            };
+
+            var cachedPosError = function(position) {};
+
+            if (navigator.geolocation) {
+                $.device.gps = true;
+                var onerr = onerror || $self.options.onerror;
+                $self.getCurrentPosition(cachedPosSuccess, cachedPosError, {maximumAge:Infinity, timeout:0});
+                $self.getCurrentPosition(function(position){
+                    pos.push(position)
+                    callback(pos)
+                }, onerror, opts);
             }
         }
     };
