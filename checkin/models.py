@@ -11,6 +11,24 @@ from django.contrib.gis.geos import *
 
 from checkin.conf import settings
 
+from itertools import chain
+
+class CheckinManager(models.GeoManager):
+    def nearby_places(self, lat=None, lng=None, accuracy=None):
+        out = []
+        for campaign in self.get_query_set():
+            rs = campaign.checkinplace_set.filter(
+                    point__distance_lte=(Point(lng, lat), D(m=500)), #campaign.proximity
+                    is_active=True)
+
+            if rs.count() > 0:
+                out.append(rs)
+
+        return list(chain(*out))
+
+    def get_query_set(self):
+        return super(CheckinManager, self).get_query_set()
+
 
 class CheckinCampaign(models.Model):
     owner           = models.ForeignKey(User)
@@ -22,6 +40,8 @@ class CheckinCampaign(models.Model):
     proximity       = models.IntegerField(_('Minimum required proximity'), default=settings.DEFAULT_PROXIMITY)
     min_accuracy    = models.IntegerField(_('Minimum required accuracy'), default=settings.DEFAULT_PROXIMITY)
     is_active       = models.BooleanField(_('Is active'), default=True)
+
+    objects         = CheckinManager()
 
    #def _format_distance(self, pnt):
    #   #return (pnt, D(**{self.distances_unit: self.proximity}))
@@ -46,10 +66,6 @@ class CheckinCampaign(models.Model):
         else:
             return False
 
-    def __repr__(self):
-        return "<CheckinCampaign('%s','%s','%s','%s')>" % (
-            self.name, self.owner, self.date_start, self.date_end)
-
     def __unicode__(self):
         return u"%s" % self.name
 
@@ -73,9 +89,6 @@ class CheckinPlace(models.Model):
         self.point = Point(self.lng, self.lat)
         super(CheckinPlace, self).save(*args, **kwargs)
 
-    def __repr__(self):
-        return "<CheckinPlace('%s','%s')>" % (self.name, self.point)
-
     def __unicode__(self):
         return u"%s at lat: %s, lng: %s (%s)" % (self.name, self.lat, self.lng, self.campaign)
 
@@ -85,9 +98,9 @@ class CheckinPlace(models.Model):
 
 
 class Checkin(models.Model):
-    user       = models.ForeignKey(User)
     date       = models.DateTimeField(_('Checkin date'), auto_now_add=True)
     place      = models.ForeignKey(CheckinPlace, blank=True, null=True)
+    user       = models.ForeignKey(User)
     is_valid   = models.BooleanField(default=False)
     # Checkin infos
     lng        = models.FloatField()
