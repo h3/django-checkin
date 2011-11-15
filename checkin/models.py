@@ -111,10 +111,6 @@ class Checkin(models.Model):
     visitor_ip = models.IPAddressField(blank=True, null=True)
     extra_data = models.TextField(blank=True, null=True)
 
-    def __repr__(self):
-        return "<CheckinLog('%s','%s','%s','%s','%s')>" % (
-            self.place, self.lat, self.lng, self.client_ip, self.date)
-
     def __unicode__(self):
         title = self.is_valid and 'Valid checkin' or 'Invalid checkin'
         return u"%s at %s" % (title, self.place)
