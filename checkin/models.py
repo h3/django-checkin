@@ -114,3 +114,6 @@ class Checkin(models.Model):
     def __unicode__(self):
         title = self.is_valid and 'Valid checkin' or 'Invalid checkin'
         return u"%s at %s" % (title, self.place)
+
+    class Meta:
+        ordering = ('-date',)
