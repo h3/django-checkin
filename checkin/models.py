@@ -54,14 +54,16 @@ class CheckinCampaign(models.Model):
    #    else:
    #        return (pnt, D(m=self.proximity))
 
-    def checkin(self, lng, lat):
-        qs = self.checkinplace_set.filter(
-                point__distance_lte=(Point(lng, lat), D(m=self.proximity)),
-                is_active=True)
+    def checkin(self, lng, lat, place_id=None):
+        q = {'point__distance_lte': (Point(lng, lat), D(m=self.proximity)), 'is_active': True}
+        if place_id:
+            q['id'] = place_id
+        
+        qs = self.checkinplace_set.filter(**q)
+
         # TODO: second pass for checkin places that have custom proximity set
         if qs.count() > 0:
             # TODO: account for allow_multi_ci
-            print "Sucessful checkin !!"
             return qs
         else:
             return False
