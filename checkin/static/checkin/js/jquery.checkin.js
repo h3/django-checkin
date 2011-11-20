@@ -207,6 +207,9 @@ $.checkin = function() {
                     callback(pos)
                 }, onerror, opts);
             }
+            else {
+                console.log('Your browser does not support Geolocation');
+            }
         }
     };
 }();

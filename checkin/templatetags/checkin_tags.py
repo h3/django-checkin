@@ -7,7 +7,9 @@ from checkin.models import CheckinPlace, Checkin
 
 register = template.Library()
 
-
+"""
+Check if a used has checked in at a given place within a given amount of hours
+"""
 
 class CheckedInWithinLastNode(template.Node):
     def __init__(self, hours, place, user, varname):
@@ -22,7 +24,6 @@ class CheckedInWithinLastNode(template.Node):
                 date__gte=(datetime.datetime.now() - datetime.timedelta(hours=self.hours)))
         context[self.varname] = qs.count() and qs[0] or False
         return ''
-
 
 @register.tag()
 def checked_in_within_last(parser, token):

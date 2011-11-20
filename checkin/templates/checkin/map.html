@@ -45,7 +45,7 @@
     }
 
     $.addMapMarker = function(map, point, title, image){
-        return marker = new google.maps.Marker({
+        return new google.maps.Marker({
             position: point, 
             map: map, 
             title: title,
@@ -137,12 +137,12 @@
             map.setCenter(initialLocation);
 
             {% for place in checkinplace_list %}
-            var point{{ forloop.counter }} = new google.maps.LatLng({{ place.lat }}, {{ place.lng }});
+            var point{{ forloop.counter }} = new google.maps.LatLng("{{ place.lat|stringformat:"f" }}", "{{ place.lng|stringformat:"f" }}");
 
             var marker{{ forloop.counter }} = $.addMapMarker(map, point{{ forloop.counter }}, 
                 "{{ place.name }} - {{ place.campaign }}",
                 "{{ STATIC_URL }}checkin/img/checkinplace-{{ place.is_active|yesno:"active,inactive" }}.png"
-            )
+            );
 
             var range{{ forloop.counter }} = new google.maps.Circle({
               strokeColor: "#{{ place.is_active|yesno:"bdff16,999999" }}",
@@ -188,6 +188,7 @@
               infowindow{{ forloop.counter }}.open(map, marker{{ forloop.counter }});
             });
             {% endfor %}
+
             {% comment %}
             {% for checkin in checkin_list %}
             var marker = $.addMapMarker(map, 
