@@ -13,17 +13,16 @@ from checkin.conf import settings
 
 from itertools import chain
 
+
 class CheckinManager(models.GeoManager):
-    def nearby_places(self, lat=None, lng=None, accuracy=None):
+    def nearby_places(self, lat=None, lng=None, accuracy=None, campaigns=None):
         out = []
-        for campaign in self.get_query_set():
+        for campaign in self.get_query_set().filter(pk__in=campaigns):
             rs = campaign.checkinplace_set.filter(
-                    point__distance_lte=(Point(lng, lat), D(m=500)), #campaign.proximity
+                    point__distance_lte=(Point(lng, lat), D(m=campaign.proximity)),
                     is_active=True)
 
-            if rs.count() > 0:
-                out.append(rs)
-
+            if rs.count() > 0: out.append(rs)
         return list(chain(*out))
 
     def get_query_set(self):
