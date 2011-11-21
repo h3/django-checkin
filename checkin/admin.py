@@ -24,6 +24,7 @@ class CheckinPlaceAdmin(GeoModelAdmin):
     list_editable = ('date_start', 'date_end')
     search_fields = ('name', 'address')
     date_hierarchy = 'date_created'
+    exclude = ('distances_unit', )
 admin.site.register(CheckinPlace, CheckinPlaceAdmin)
 
 
