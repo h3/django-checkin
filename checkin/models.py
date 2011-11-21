@@ -35,7 +35,7 @@ class CheckinCampaign(models.Model):
     date_start      = models.DateTimeField(_('Date start'), blank=True, null=True)
     date_end        = models.DateTimeField(_('Date end'), blank=True, null=True)
     date_created    = models.DateTimeField(_('Date created'), auto_now_add=True)
-    allow_multi_ci  = models.BooleanField(_('Allow overlaping checkins'), default=True)
+#   allow_multi_ci  = models.BooleanField(_('Allow overlaping checkins'), default=True)
     proximity       = models.IntegerField(_('Minimum required proximity'), default=settings.DEFAULT_PROXIMITY)
     min_accuracy    = models.IntegerField(_('Minimum required accuracy'), default=settings.DEFAULT_PROXIMITY)
     is_active       = models.BooleanField(_('Is active'), default=True)
@@ -80,6 +80,8 @@ class CheckinPlace(models.Model):
     distances_unit  = models.CharField(_('Distance unit'), max_length=3, choices=settings.DISTANCE_CHOICES, default=settings.DEFAULT_DISTANCE_UNIT)
     proximity       = models.IntegerField(_('Minimum required proximity'), blank=True, null=True)
     min_accuracy    = models.IntegerField(_('Minimum required accuracy'), blank=True, null=True)
+    date_start      = models.DateTimeField(_('Date start'), blank=True, null=True)
+    date_end        = models.DateTimeField(_('Date end'), blank=True, null=True)
     date_created    = models.DateTimeField(_('Date created'), auto_now_add=True)
     is_active       = models.BooleanField(_('Is active'), default=True)
 
@@ -91,7 +93,7 @@ class CheckinPlace(models.Model):
         super(CheckinPlace, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return u"%s at lat: %s, lng: %s (%s)" % (self.name, self.lat, self.lng, self.campaign)
+        return u"%s" % (self.name)
 
     class Meta:
         unique_together = (("campaign", "lat", "lng"),)
