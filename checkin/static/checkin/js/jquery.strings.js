@@ -13,12 +13,7 @@
   Documentation: http://code.google.com/p/jquery-utils/wiki/StringFormat
   
 */
-
 (function($){
-
-    if (!$.isString) { $.isString = function(o) { return typeof(o) == 'string' && true || false; }; }
-    if (!$.isObject) { $.isObject = function(o) { return typeof(o) == 'object'; }; }
-
     var strings = {
         strConversion: {
             // tries to translate any objects type into string gracefully
@@ -60,7 +55,7 @@
                     case 'object': // Thanks to Jonathan Works for the patch
                         var keys = key.split('.');
                         var obj = args;
-                        for(var subkey = 1; subkey < keys.length; subkey++){
+                        for(var subkey = 0; subkey < keys.length; subkey++){
                             obj = obj[keys[subkey]];
                         }
                         if (typeof(obj) != 'undefined') {

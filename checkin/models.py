@@ -3,11 +3,14 @@
 # vim: ai ts=4 sts=4 et sw=4
 #from itertools import tee, izip
 
+from datetime import datetime
+
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.gis.measure import Distance as D
 from django.contrib.gis.geos import *
+from django.db.models import Q
 
 from checkin.conf import settings
 
@@ -15,10 +18,19 @@ from itertools import chain
 
 
 class CheckinManager(models.GeoManager):
+    
     def nearby_places(self, lat=None, lng=None, accuracy=None, campaigns=None):
         out = []
-        for campaign in self.get_query_set().filter(pk__in=campaigns):
+        now = datetime.now()
+
+        for campaign in self.get_query_set().filter(
+                Q(date_start__isnull=True) | Q(date_start__lte=now),
+                Q(date_end__isnull=True) | Q(date_end__gte=now),
+                pk__in=campaigns):
+                
             rs = campaign.checkinplace_set.filter(
+                    Q(date_start__isnull=True) | Q(date_start__lte=now),
+                    Q(date_end__isnull=True) | Q(date_end__gte=now),
                     point__distance_lte=(Point(lng, lat), D(m=campaign.proximity)),
                     is_active=True)
 

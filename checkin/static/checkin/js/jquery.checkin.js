@@ -205,7 +205,7 @@ $.checkin = function() {
                 $self.getCurrentPosition(function(position){
                     pos.push(position)
                     callback(pos)
-                }, onerror, opts);
+                }, onerr, opts);
             }
             else {
                 console.log('Your browser does not support Geolocation');
