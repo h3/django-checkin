@@ -14,6 +14,15 @@
   
 */
 (function($){
+
+    if (!$.isString) {
+        $.isString = function(o) { return typeof(o) == 'string' && true || false; };
+    }
+
+    if (!$.isObject) {
+        $.isObject = function(o) { return (typeof(o) == 'object'); };
+    }
+
     var strings = {
         strConversion: {
             // tries to translate any objects type into string gracefully
