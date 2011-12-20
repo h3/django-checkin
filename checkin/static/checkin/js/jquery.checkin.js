@@ -192,16 +192,16 @@ $.checkin = function() {
             var opts  = $.extend({maximumAge: 600000, timeout: 5000, enableHighAccuracy: true}, options);
             var pos = []
 
-            var cachedPosSuccess = function(position) {
-                pos.push(position);
-            };
+          //var cachedPosSuccess = function(position) {
+          //    pos.push(position);
+          //};
 
-            var cachedPosError = function(position) {};
+          //var cachedPosError = function(position) {};
 
             if (navigator.geolocation) {
                 $.device.gps = true;
                 var onerr = onerror || $self.options.onerror;
-                $self.getCurrentPosition(cachedPosSuccess, cachedPosError, {maximumAge:Infinity, timeout:0});
+                //$self.getCurrentPosition(cachedPosSuccess, cachedPosError, {maximumAge:Infinity, timeout:0});
                 $self.getCurrentPosition(function(position){
                     pos.push(position)
                     callback(pos)
