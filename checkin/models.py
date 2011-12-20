@@ -22,6 +22,7 @@ class CheckinManager(models.GeoManager):
     def nearby_places(self, lat=None, lng=None, accuracy=None, campaigns=None):
         out = []
         now = datetime.now()
+        position = Point(lng, lat)
 
         for campaign in self.get_query_set().filter(
                 Q(date_start__isnull=True) | Q(date_start__lte=now),
@@ -31,8 +32,8 @@ class CheckinManager(models.GeoManager):
             rs = campaign.checkinplace_set.filter(
                     Q(date_start__isnull=True) | Q(date_start__lte=now),
                     Q(date_end__isnull=True) | Q(date_end__gte=now),
-                    point__distance_lte=(Point(lng, lat), D(m=campaign.proximity)),
-                    is_active=True)
+                    point__distance_lte=(position, D(m=campaign.proximity)),
+                    is_active=True).distance(position).order_by('distance')
 
             if rs.count() > 0: out.append(rs)
         return list(chain(*out))

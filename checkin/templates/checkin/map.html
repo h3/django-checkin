@@ -17,7 +17,7 @@
     var checkin = $.checkin.init({
         api_url: 'http://{{ request.META.HTTP_HOST }}/c/',
         debug:      true,
-        campaign:   [2],
+        campaign:   [1],
         bufferLength: 3, 
         minAccuracy: 30000,     // 20 000m (to allow desktop testing)
         minInterval: 3 * 1000,  // 3s
@@ -63,17 +63,17 @@
     var infoWindowTemplate = [
         '<div id="content">',
             '<div id="siteNotice"></div>',
-            '<b id="firstHeading" class="firstHeading"><a href="{% url admin:checkin_checkinplace_changelist %}{place.id:d}/">{place.name:s}</a></b>',
+            '<b id="firstHeading" class="firstHeading"><a href="{% url admin:checkin_checkinplace_changelist %}{pk:s}/">{name:s}</a></b>',
             '<div id="bodyContent">',
-                '<address>{place.address:s}</address>',
+                '<address>{address:s}</address>',
                 '<table style="text-align:left;">',
-                    '<tr><th>Campaign</th><td>{place.campaign:s}</td></tr>',
-                    '<tr><th>Longitude</th><td>{place.lng:s}</td></tr>',
-                    '<tr><th>Latitude</th><td>{place.lat:s}</td></tr>',
-                    '<tr><th>Req. proximity</th><td>{place.proximity:s} {place.distances_unit:s}</td></tr>',
-                    '<tr><th>Min. accuracy</th><td>{place.min_accuracy:s} {place.distances_unit:s}</td></tr>',
-                    '<tr><th>Date created</th><td>{place.date_created:s}</td></tr>',
-                    '<tr><th>Is active</th><td>{place.is_active:s}</td></tr>',
+                    '<tr><th>Campaign</th><td>{campaign:s}</td></tr>',
+                    '<tr><th>Longitude</th><td>{lng:s}</td></tr>',
+                    '<tr><th>Latitude</th><td>{lat:s}</td></tr>',
+                    '<tr><th>Req. proximity</th><td>{proximity:s} {distances_unit:s}</td></tr>',
+                    '<tr><th>Min. accuracy</th><td>{min_accuracy:s} {distances_unit:s}</td></tr>',
+                    '<tr><th>Date created</th><td>{date_created:s}</td></tr>',
+                    '<tr><th>Is active</th><td>{is_active:s}</td></tr>',
                 '</table>',
         '</div>',
     '</div>'
@@ -168,7 +168,7 @@
             
             var infowindow{{ forloop.counter }} = new google.maps.InfoWindow({
                 content: $.format(infoWindowTemplate, {
-                    id: "{{ place.id }}",
+                    id: "{{ place.pk }}",
                     name: "{{ place.name }}",
                     address: "{{ place.address }}",
                     campaign: "[{{ place.campaign_id }}] {{ place.campaign.name }}",
@@ -177,8 +177,8 @@
                     lng: "{{ place.lng }}",
                     lat: "{{ place.lat }}",
                     distances_unit: "{{ place.distances_unit }}",
-                    proximity: "{{ place.proximity }}",
-                    min_accuracy: "{{ place.min_accuracy }}",
+                    proximity: "{% firstof place.proximity place.campaign.proximity %}",
+                    min_accuracy: "{% firstof place.min_accuracy place.campaign.min_accuracy %}",
                     date_created: "{{ place.date_created }}",
                     is_active: "{{ place.is_active }}"
                 })
@@ -232,11 +232,9 @@
                   center: active_point,
                   radius: pos.coords.accuracy
                 });
-            })
-
+            });
         } // initmap
-
-    })
+    });
 })(jQuery)
 </script>
 {% endblock %}
