@@ -189,7 +189,7 @@ $.checkin = function() {
         },
 
         getCurrentPosition: function(callback, onerror, options) {
-            var opts  = $.extend({maximumAge: 600000, timeout: 5000}, options);
+            var opts  = $.extend({maximumAge: 600000, timeout: 5000, enableHighAccuracy: true}, options);
             var pos = []
 
             var cachedPosSuccess = function(position) {
