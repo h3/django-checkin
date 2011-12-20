@@ -109,7 +109,7 @@ class CheckinPlace(models.Model):
         super(CheckinPlace, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        return u"%s" % (self.name)
+        return u"%s" % self.name
 
     class Meta:
         unique_together = (("campaign", "lat", "lng"),)
