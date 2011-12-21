@@ -131,6 +131,16 @@ class Checkin(models.Model):
     visitor_ip = models.IPAddressField(blank=True, null=True)
     extra_data = models.TextField(blank=True, null=True)
 
+    def distance(self):
+        try:
+            place = CheckinPlace.objects.filter(pk=self.place.id).distance(Point(self.lng, self.lat))[0]
+            if place.distance.m > 999: 
+                return '~%0.3f km' % place.distance.km
+            else:
+                return '~%0.3f m' % place.distance.m
+        except:
+            return "Unknown"
+
     def __unicode__(self):
         title = self.is_valid and 'Valid checkin' or 'Invalid checkin'
         return u"%s at %s" % (title, self.place)
