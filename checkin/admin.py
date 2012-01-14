@@ -71,7 +71,7 @@ admin.site.register(CheckinPlace, CheckinPlaceAdmin)
 
 
 class CheckinAdmin(GeoModelAdmin):
-    list_display = ('date', 'get_place_display', 'get_campaign_display', 'get_latlon', 'accuracy', 'visitor_ip', 'is_valid')
+    list_display = ('date', 'user', 'get_place_display', 'get_campaign_display', 'get_latlon', 'accuracy', 'visitor_ip', 'is_valid')
     readonly_fields = CHECKIN_READONLY_FIELDS
     list_filter = ('place__name', 'place__campaign', 'is_valid',)
     search_fields = ('place__name', 'place__address')
