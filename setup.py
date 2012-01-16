@@ -12,10 +12,10 @@ setup(
     download_url='',
     packages=find_packages(),
     include_package_data=True,
-    package_data={'checkin': [
-        'templates/*',
-        'static/*',
-    ]},
+#   package_data={'checkin': [
+#       'templates/*',
+#       'static/*',
+#   ]},
     zip_safe=False,
     classifiers=[
         'Development Status :: 3 - Alpha',
