@@ -7,7 +7,7 @@ class Command(BaseCommand):
     help = 'Clear all checkins (non reversible !)'
 
     def handle(self, *args, **options):
-        Chekin.objects.all().delete()
-        self.stdout.write('Successfully removed all checkins.')
+        Checkin.objects.all().delete()
+        self.stdout.write('Successfully removed all checkins.\n')
 
 
