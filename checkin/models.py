@@ -32,7 +32,7 @@ class CheckinManager(models.GeoManager):
             rs = campaign.checkinplace_set.filter(
                     Q(date_start__isnull=True) | Q(date_start__lte=now),
                     Q(date_end__isnull=True) | Q(date_end__gte=now),
-                    point__distance_lte=(position, D(m=campaign.proximity)),
+                    point__distance_lte=(position, D(m=campaign.proximity + settings.EXTENDED_RADIUS_LIMIT)),
                     is_active=True).distance(position).order_by('distance')
 
             if rs.count() > 0: out.append(rs)
