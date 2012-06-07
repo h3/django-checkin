@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.gis.measure import Distance as D
 from django.contrib.gis.geos import *
-from django.db.models import Q
+from django.db.models import Q,F
 
 from checkin.conf import settings
 
@@ -24,18 +24,43 @@ class CheckinManager(models.GeoManager):
         now = datetime.now()
         position = Point(lng, lat)
 
+
         for campaign in self.get_query_set().filter(
                 Q(date_start__isnull=True) | Q(date_start__lte=now),
                 Q(date_end__isnull=True) | Q(date_end__gte=now),
                 pk__in=campaigns):
                 
             rs = campaign.checkinplace_set.filter(
-                    Q(date_start__isnull=True) | Q(date_start__lte=now),
-                    Q(date_end__isnull=True) | Q(date_end__gte=now),
-                    point__distance_lte=(position, D(m=campaign.proximity + settings.EXTENDED_RADIUS_LIMIT)),
-                    is_active=True).distance(position).order_by('distance')
+                    Q(date_start__isnull=True) | Q(date_start__lte=now), #date debut
+                    Q(date_end__isnull=True) | Q(date_end__gte=now), #date fin
+                     is_active=True)\
+                    .distance(position)\
+                    .order_by('distance')\
 
-            if rs.count() > 0: out.append(rs)
+            res_1 = rs.filter(proximity = None,
+                    point__distance_lte=(
+                        position, 
+                        D(m= campaign.proximity )#+ settings.EXTENDED_RADIUS_LIMIT)
+                    ),
+                    )
+            res_2 = rs.exclude(proximity__isnull = True)
+
+            rs = []
+
+            for u in res_2:
+                try:
+                    rs.append(CheckinPlace.objects.get(
+                        pk = u.pk,
+                        point__distance_lte=(
+                            position, 
+                            D(m= u.proximity )#+ settings.EXTENDED_RADIUS_LIMIT)
+                        ),
+                    ))
+                except:
+                    pass
+
+            if res_1.__len__() > 0: out.append([ u for u in res_1])
+            if rs.__len__() > 0: out.append([ u for u in rs])
         return list(chain(*out))
 
     def get_query_set(self):
@@ -67,9 +92,11 @@ class CheckinCampaign(models.Model):
    #        return (pnt, D(m=self.proximity))
 
     def checkin(self, lng, lat, place_id=None):
+        print "*****************"
         q = {'point__distance_lte': (Point(lng, lat), D(m=self.proximity)), 'is_active': True}
         if place_id:
             q['id'] = place_id
+
         
         qs = self.checkinplace_set.filter(**q)
 
