@@ -10,8 +10,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.gis.measure import Distance as D
 from django.contrib.gis.geos import *
-from django.db.models import Q
-
+from django.db.models import F, Q
 from checkin.conf import settings
 
 from itertools import chain
@@ -19,23 +18,30 @@ from itertools import chain
 
 class CheckinManager(models.GeoManager):
     
-    def nearby_places(self, lat=None, lng=None, accuracy=None, campaigns=None):
+    def nearby_places(self, lat=None, lng=None, accuracy=None, campaigns=[]):
         out = []
         now = datetime.now()
         position = Point(lng, lat)
 
         for campaign in self.get_query_set().filter(
+                # We filter only active campaigns
                 Q(date_start__isnull=True) | Q(date_start__lte=now),
                 Q(date_end__isnull=True) | Q(date_end__gte=now),
                 pk__in=campaigns):
-                
+            
             rs = campaign.checkinplace_set.filter(
+                    # We filter only active places
                     Q(date_start__isnull=True) | Q(date_start__lte=now),
                     Q(date_end__isnull=True) | Q(date_end__gte=now),
-                    point__distance_lte=(position, D(m=campaign.proximity + settings.EXTENDED_RADIUS_LIMIT)),
-                    is_active=True).distance(position).order_by('distance')
+                    # Which are within the (campaign or custom checkin place proximity) + the extended radius
+                    Q(point__distance_lte=(position, D(m=campaign.proximity + settings.EXTENDED_RADIUS_LIMIT))) \
+                        | Q(point__distance_lte=(position, D(m=F('proximity') or 0 + settings.EXTENDED_RADIUS_LIMIT))),
+                    is_active=True,
+                ).distance(position).order_by('distance')
+
 
             if rs.count() > 0: out.append(rs)
+
         return list(chain(*out))
 
     def get_query_set(self):
