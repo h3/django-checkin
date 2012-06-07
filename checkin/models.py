@@ -19,17 +19,18 @@ from itertools import chain
 
 class CheckinManager(models.GeoManager):
     
-    def nearby_places(self, lat=None, lng=None, accuracy=None, campaigns=None):
+    def nearby_places(self, lat=None, lng=None, accuracy=None, campaigns=[]):
         out = []
         now = datetime.now()
         position = Point(lng, lat)
 
 
         for campaign in self.get_query_set().filter(
+                # We filter only active campaigns
                 Q(date_start__isnull=True) | Q(date_start__lte=now),
                 Q(date_end__isnull=True) | Q(date_end__gte=now),
                 pk__in=campaigns):
-                
+            
             rs = campaign.checkinplace_set.filter(
                     Q(date_start__isnull=True) | Q(date_start__lte=now), #date debut
                     Q(date_end__isnull=True) | Q(date_end__gte=now), #date fin
