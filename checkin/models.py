@@ -40,7 +40,7 @@ class CheckinManager(models.GeoManager):
             res_1 = rs.filter(proximity = None,
                     point__distance_lte=(
                         position, 
-                        D(m= campaign.proximity )#+ settings.EXTENDED_RADIUS_LIMIT)
+                        D(m= campaign.proximity + settings.EXTENDED_RADIUS_LIMIT)
                     ),
                     )
             res_2 = rs.exclude(proximity__isnull = True)
@@ -53,7 +53,7 @@ class CheckinManager(models.GeoManager):
                         pk = u.pk,
                         point__distance_lte=(
                             position, 
-                            D(m= u.proximity )#+ settings.EXTENDED_RADIUS_LIMIT)
+                            D(m= u.proximity + settings.EXTENDED_RADIUS_LIMIT)
                         ),
                     ))
                 except:
@@ -92,13 +92,20 @@ class CheckinCampaign(models.Model):
    #        return (pnt, D(m=self.proximity))
 
     def checkin(self, lng, lat, place_id=None):
-        print "*****************"
-        q = {'point__distance_lte': (Point(lng, lat), D(m=self.proximity)), 'is_active': True}
+        q= {'is_active':True,}
         if place_id:
             q['id'] = place_id
 
-        
+        print "***********************"
+        print place_id
+        print self.proximity
+        if not place_id:
+            q['point__distance_lte']= (Point(lng, lat), D(m=self.proximity))
+        else:
+            q['point__distance_lte']= (Point(lng, lat), D(m=self.checkinplace_set.get(id=place_id).proximity or self.proximity ))
+
         qs = self.checkinplace_set.filter(**q)
+
 
         # TODO: second pass for checkin places that have custom proximity set
         if qs.count() > 0:
