@@ -97,9 +97,6 @@ class CheckinCampaign(models.Model):
         if place_id:
             q['id'] = place_id
 
-        print "***********************"
-        print place_id
-        print self.proximity
         if not place_id:
             q['point__distance_lte']= (Point(lng, lat), D(m=self.proximity))
         else:
